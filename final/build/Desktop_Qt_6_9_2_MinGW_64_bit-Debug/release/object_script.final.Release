@@ -1,0 +1,12 @@
+release/adplanmodel.o
+release/main.o
+release/mainwindow.o
+release/databasehandler.o
+release/networkmanager.o
+release/adupdateworker.o
+release/adplanmodel.o
+release/moc_adplanmodel.o
+release/moc_mainwindow.o
+release/moc_databasehandler.o
+release/moc_networkmanager.o
+release/moc_adupdateworker.o
