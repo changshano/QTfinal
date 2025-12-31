@@ -11,7 +11,8 @@ class AdPlanModel : public QAbstractTableModel
     Q_OBJECT
 public:
     explicit AdPlanModel(QObject *parent = nullptr);
-
+    void addAd(const QVariantMap &adData);
+    void removeAd(int row);
     // 重写父类方法
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -24,8 +25,7 @@ public:
 
     // 自定义方法
     void refresh();
-    void addAd(const QVariantMap &adData);
-    void removeAd(int row);
+
     QVariantMap getAd(int row) const;
 
 private:

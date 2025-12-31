@@ -120,7 +120,7 @@ void AdPlanModel::addAd(const QVariantMap &adData)
 {
     beginInsertRows(QModelIndex(), m_ads.size(), m_ads.size());
     m_ads.append(adData);
-    m_dbHandler->addAd(adData);
+    m_dbHandler->updateAd(adData);  // 改为使用 updateAd
     endInsertRows();
 }
 
@@ -128,11 +128,13 @@ void AdPlanModel::removeAd(int row)
 {
     if (row < 0 || row >= m_ads.size())
         return;
-
     beginRemoveRows(QModelIndex(), row, row);
     QString adId = m_ads[row]["id"].toString();
     m_ads.removeAt(row);
-    m_dbHandler->removeAd(adId);
+
+    QVariantMap adData;
+    adData["id"] = adId;
+    m_dbHandler->updateAd(adData);
     endRemoveRows();
 }
 

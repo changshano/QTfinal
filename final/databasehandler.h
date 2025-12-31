@@ -4,10 +4,8 @@
 #include <QObject>
 #include <QSqlDatabase>
 #include <QSqlQuery>
-#include <QSqlError>
 #include <QVariantMap>
 #include <QList>
-#include <QDebug>
 
 class DatabaseHandler : public QObject
 {
@@ -17,12 +15,8 @@ public:
     ~DatabaseHandler();
 
     bool initDatabase();
-    bool addAd(const QVariantMap &adData);
     bool updateAd(const QVariantMap &adData);
-    bool removeAd(const QString &adId);
     QList<QVariantMap> getAllAds();
-    QVariantMap getAd(const QString &adId);
-    bool clearAllAds();
 
 private:
     QSqlDatabase m_db;

@@ -49,10 +49,9 @@ template <> constexpr inline auto NetworkManager::qt_create_metaobjectdata<qt_me
         "adsUpdated",
         "errorOccurred",
         "error",
-        "onAdsFetched",
+        "onAdDownloaded",
         "QNetworkReply*",
-        "reply",
-        "onAdDownloaded"
+        "reply"
     };
 
     QtMocHelpers::UintData qt_methods {
@@ -66,12 +65,8 @@ template <> constexpr inline auto NetworkManager::qt_create_metaobjectdata<qt_me
         QtMocHelpers::SignalData<void(const QString &)>(8, 2, QMC::AccessPublic, QMetaType::Void, {{
             { QMetaType::QString, 9 },
         }}),
-        // Slot 'onAdsFetched'
-        QtMocHelpers::SlotData<void(QNetworkReply *)>(10, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { 0x80000000 | 11, 12 },
-        }}),
         // Slot 'onAdDownloaded'
-        QtMocHelpers::SlotData<void(QNetworkReply *)>(13, 2, QMC::AccessPrivate, QMetaType::Void, {{
+        QtMocHelpers::SlotData<void(QNetworkReply *)>(10, 2, QMC::AccessPrivate, QMetaType::Void, {{
             { 0x80000000 | 11, 12 },
         }}),
     };
@@ -100,8 +95,7 @@ void NetworkManager::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         case 0: _t->adContentReady((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[4]))); break;
         case 1: _t->adsUpdated(); break;
         case 2: _t->errorOccurred((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
-        case 3: _t->onAdsFetched((*reinterpret_cast< std::add_pointer_t<QNetworkReply*>>(_a[1]))); break;
-        case 4: _t->onAdDownloaded((*reinterpret_cast< std::add_pointer_t<QNetworkReply*>>(_a[1]))); break;
+        case 3: _t->onAdDownloaded((*reinterpret_cast< std::add_pointer_t<QNetworkReply*>>(_a[1]))); break;
         default: ;
         }
     }
@@ -109,13 +103,6 @@ void NetworkManager::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         switch (_id) {
         default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;
         case 3:
-            switch (*reinterpret_cast<int*>(_a[1])) {
-            default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;
-            case 0:
-                *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType::fromType< QNetworkReply* >(); break;
-            }
-            break;
-        case 4:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;
             case 0:
@@ -153,14 +140,14 @@ int NetworkManager::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 5)
+        if (_id < 4)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 5;
+        _id -= 4;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 5)
+        if (_id < 4)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 5;
+        _id -= 4;
     }
     return _id;
 }

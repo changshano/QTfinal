@@ -14,6 +14,11 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+class NetworkManager;
+class DatabaseHandler;
+class QThread;
+class AdUpdateWorker;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -25,7 +30,7 @@ public:
 private slots:
     // 电梯控制相关
     void callElevatorToFloor(int floor);
-    void moveElevatorOneStep();
+    void simulateElevatorMovement();
     void updateFloorDisplay(int floor, const QString &direction);
 
     // 广告播放相关
@@ -34,14 +39,18 @@ private slots:
     void switchToPreviousAd();
     void switchToNextAd();
 
-    // 模拟电梯移动
-    void simulateElevatorMovement();
+    // 网络和广告更新
+    void onAdContentReady(const QString &adId, const QString &type,
+                          const QString &content, const QString &localPath);
+    void onAdsUpdated();
 
 private:
     void setupUI();
-    void setupLocalAds();           // 改为从本地导入广告
-    void setupElevatorTimer();
+    void setupDatabase();
+    void setupNetwork();
+    void setupWorkerThread();
     void setupAdCarousel();
+    void loadCachedAds();
 
 private:
     Ui::MainWindow *ui;
@@ -49,14 +58,11 @@ private:
     // 电梯状态
     int m_currentFloor = 1;          // 当前楼层
     QString m_currentDirection = "停止";  // 当前方向
-    int m_targetFloor = 0;          // 目标楼层
-    bool m_isMoving = false;        // 是否正在移动
 
     // 电梯UI组件
     QLabel *m_floorNumberLabel = nullptr;   // 楼层数字显示
     QLabel *m_directionLabel = nullptr;     // 方向显示
     QLabel *m_floorArrowLabel = nullptr;    // 方向箭头
-    QTimer *m_elevatorMoveTimer = nullptr;  // 电梯移动定时器
     QTimer *m_elevatorSimTimer = nullptr;   // 模拟电梯定时器
 
     // 广告显示
@@ -66,5 +72,12 @@ private:
     QTimer *m_adCarouselTimer = nullptr;    // 广告轮播定时器
     QList<QVariantMap> m_adList;            // 广告列表
     int m_currentAdIndex = 0;               // 当前广告索引
+
+    // 网络和数据库
+    NetworkManager *m_networkManager = nullptr;
+    DatabaseHandler *m_databaseHandler = nullptr;
+
+    // 线程
+    QThread *m_workerThread = nullptr;
 };
 #endif // MAINWINDOW_H

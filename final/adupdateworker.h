@@ -2,10 +2,7 @@
 #define ADUPDATEWORKER_H
 
 #include <QObject>
-#include <QThread>
 #include <QTimer>
-#include <QDateTime>
-#include <QDebug>
 
 class AdUpdateWorker : public QObject
 {
@@ -15,7 +12,6 @@ public:
 
 public slots:
     void start();
-    void stop();
 
 signals:
     void updateProgress(const QString &message);
@@ -26,7 +22,5 @@ private slots:
 
 private:
     QTimer *m_updateTimer;
-    QString m_lastUpdateTime;
-    bool m_isRunning = false;
 };
 #endif // ADUPDATEWORKER_H

@@ -1,7 +1,10 @@
-#include <QstatusBar>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "databasehandler.h"
+#include "networkmanager.h"
+#include "adupdateworker.h"
 
+#include <QThread>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
@@ -9,12 +12,12 @@
 #include <QGroupBox>
 #include <QLabel>
 #include <QTimer>
-
+#include <QStatusBar>
 #include <QDateTime>
 #include <QPixmap>
 #include <QFile>
 #include <QDir>
-#include <QSet>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -26,32 +29,28 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("智能电梯广告系统");
     resize(1000, 700);
 
-    // 设置样式
-    QFile styleFile(":/resources/styles.qss");
-    if (styleFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        setStyleSheet(styleFile.readAll());
-        styleFile.close();
-    }
-
     setupUI();
-    setupLocalAds();       // 从本地导入广告
-    setupElevatorTimer();
+    setupDatabase();
+    setupNetwork();
+    setupWorkerThread();
     setupAdCarousel();
+
+    // 模拟电梯运行
+    m_elevatorSimTimer = new QTimer(this);
+    connect(m_elevatorSimTimer, &QTimer::timeout, this, &MainWindow::simulateElevatorMovement);
+    m_elevatorSimTimer->start(3000); // 每3秒更新一次楼层
 
     // 初始显示
     updateFloorDisplay(1, "停止");
-
-    // 显示第一个广告
-    if (!m_adList.isEmpty()) {
-        updateAdDisplay(m_adList.first());
-    }
-
-    // 状态栏
-    ui->statusbar->showMessage("系统就绪 - 电梯停止在1楼");
+    loadCachedAds();
 }
 
 MainWindow::~MainWindow()
 {
+    if (m_workerThread) {
+        m_workerThread->quit();
+        m_workerThread->wait();
+    }
     delete ui;
 }
 
@@ -73,7 +72,6 @@ void MainWindow::setupUI()
 
     // 楼层显示面板
     QGroupBox *floorDisplayGroup = new QGroupBox("电梯状态", elevatorWidget);
-    floorDisplayGroup->setStyleSheet("QGroupBox { font-size: 16px; font-weight: bold; }");
     QVBoxLayout *floorDisplayLayout = new QVBoxLayout(floorDisplayGroup);
 
     // 楼层显示
@@ -124,7 +122,6 @@ void MainWindow::setupUI()
 
     // 楼层按钮面板
     QGroupBox *floorButtonsGroup = new QGroupBox("选择楼层", elevatorWidget);
-    floorButtonsGroup->setStyleSheet("QGroupBox { font-size: 16px; font-weight: bold; }");
     QGridLayout *floorButtonsLayout = new QGridLayout(floorButtonsGroup);
 
     // 创建楼层按钮（8-1楼）
@@ -164,7 +161,6 @@ void MainWindow::setupUI()
     adLayout->setSpacing(20);
 
     QGroupBox *adGroup = new QGroupBox("广告播放", adWidget);
-    adGroup->setStyleSheet("QGroupBox { font-size: 16px; font-weight: bold; }");
     QVBoxLayout *adGroupLayout = new QVBoxLayout(adGroup);
     adGroupLayout->setSpacing(20);
 
@@ -210,25 +206,6 @@ void MainWindow::setupUI()
     QPushButton *pauseBtn = new QPushButton("暂停", adControlWidget);
     QPushButton *resumeBtn = new QPushButton("继续", adControlWidget);
 
-    // 设置按钮样式
-    QString btnStyle =
-        "QPushButton {"
-        "  font-size: 14px;"
-        "  padding: 8px 16px;"
-        "  background-color: #4CAF50;"
-        "  color: white;"
-        "  border-radius: 5px;"
-        "  min-width: 80px;"
-        "}"
-        "QPushButton:hover {"
-        "  background-color: #388E3C;"
-        "}";
-
-    prevBtn->setStyleSheet(btnStyle);
-    nextBtn->setStyleSheet(btnStyle);
-    pauseBtn->setStyleSheet(btnStyle);
-    resumeBtn->setStyleSheet(btnStyle);
-
     connect(prevBtn, &QPushButton::clicked, this, &MainWindow::switchToPreviousAd);
     connect(nextBtn, &QPushButton::clicked, this, &MainWindow::switchToNextAd);
     connect(pauseBtn, &QPushButton::clicked, this, [this]() {
@@ -260,58 +237,47 @@ void MainWindow::setupUI()
     mainLayout->addWidget(adWidget, 2);
 }
 
-void MainWindow::setupLocalAds()
+void MainWindow::setupDatabase()
 {
-    // 清除现有广告列表
-    m_adList.clear();
-
-    // 创建项目目录结构
-    QDir dir;
-    QString adsDir = "ads";
-    if (!dir.exists(adsDir)) {
-        dir.mkdir(adsDir);
+    m_databaseHandler = new DatabaseHandler(this);
+    if (m_databaseHandler->initDatabase()) {
+        ui->statusbar->showMessage("数据库初始化成功", 3000);
+    } else {
+        QMessageBox::warning(this, "警告", "数据库初始化失败");
     }
-
-    // 检查ads目录下是否有真实的图片文件
-    QString imagePath = "ads/";
-    QStringList imageNames = {"ad1.jpg", "ad2.jpg"/*, "ad3.jpg", "ad4.jpg", "ad5.jpg"*/};
-
-    for (int i = 0; i < imageNames.size(); i++) {
-        QString fullPath = imagePath + imageNames[i];
-        if (QFile::exists(fullPath)) {
-            QVariantMap imageAd;
-            imageAd["id"] = QString("img_ad_%1").arg(i+1);
-            imageAd["title"] = QString("广告图片 %1").arg(i+1);
-            imageAd["type"] = "image";
-            imageAd["content"] = QString("这是第%1个图片广告").arg(i+1);
-            imageAd["local_path"] = fullPath;
-            imageAd["duration"] = 5;
-            m_adList.append(imageAd);
-        }
-    }
-
-    // 如果没有任何广告，添加一个默认的
-    if (m_adList.isEmpty()) {
-        QVariantMap defaultAd;
-        defaultAd["id"] = "default_ad";
-        defaultAd["title"] = "默认广告";
-        defaultAd["type"] = "text";
-        defaultAd["content"] = "欢迎使用智能电梯广告系统！";
-        defaultAd["local_path"] = "";
-        defaultAd["duration"] = 5;
-        m_adList.append(defaultAd);
-    }
-
-    qDebug() << "Loaded" << m_adList.size() << "ads from local";
 }
 
-void MainWindow::setupElevatorTimer()
+void MainWindow::setupNetwork()
 {
-    // 模拟电梯自动运行的定时器
-    m_elevatorSimTimer = new QTimer(this);
-    m_elevatorSimTimer->setInterval(3000);
-    connect(m_elevatorSimTimer, &QTimer::timeout, this, &MainWindow::simulateElevatorMovement);
-    m_elevatorSimTimer->start();
+    m_networkManager = new NetworkManager(this);
+
+    connect(m_networkManager, &NetworkManager::adContentReady,
+            this, &MainWindow::onAdContentReady);
+    connect(m_networkManager, &NetworkManager::adsUpdated,
+            this, &MainWindow::onAdsUpdated);
+    connect(m_networkManager, &NetworkManager::errorOccurred,
+            this, [this](const QString &error) {
+                ui->statusbar->showMessage("网络错误: " + error, 3000);
+            });
+}
+
+void MainWindow::setupWorkerThread()
+{
+    m_workerThread = new QThread(this);
+    AdUpdateWorker *worker = new AdUpdateWorker();
+    worker->moveToThread(m_workerThread);
+
+    connect(m_workerThread, &QThread::started, worker, &AdUpdateWorker::start);
+    connect(m_workerThread, &QThread::finished, worker, &QObject::deleteLater);
+
+    connect(worker, &AdUpdateWorker::updateProgress,
+            this, [this](const QString &message) {
+                ui->statusbar->showMessage(message, 2000);
+            });
+    connect(worker, &AdUpdateWorker::adsNeedUpdate,
+            m_networkManager, &NetworkManager::fetchAds);
+
+    m_workerThread->start();
 }
 
 void MainWindow::setupAdCarousel()
@@ -322,26 +288,44 @@ void MainWindow::setupAdCarousel()
     m_adCarouselTimer->start();
 }
 
+void MainWindow::loadCachedAds()
+{
+    m_adList = m_databaseHandler->getAllAds();
+    if (!m_adList.isEmpty()) {
+        m_currentAdIndex = 0;
+        updateAdDisplay(m_adList.first());
+        ui->statusbar->showMessage(QString("加载了%1个广告").arg(m_adList.size()), 3000);
+    } else {
+        m_adDisplayLabel->setText("<h2>暂无广告</h2><p>正在从服务器获取广告...</p>");
+        ui->statusbar->showMessage("从服务器获取广告中...", 3000);
+    }
+}
+
 void MainWindow::callElevatorToFloor(int floor)
 {
     if (floor < 1 || floor > 8) {
-        ui->statusbar->showMessage("无效楼层：" + QString::number(floor), 2000);
+        ui->statusbar->showMessage("无效楼层: " + QString::number(floor), 2000);
         return;
     }
+
     if (floor == m_currentFloor) {
         ui->statusbar->showMessage("电梯已在" + QString::number(floor) + "楼", 2000);
         return;
     }
+
     // 设置目标楼层
-    m_targetFloor = floor;
+    int targetFloor = floor;
+
     // 确定方向
     if (floor > m_currentFloor) {
         m_currentDirection = "上行";
     } else {
         m_currentDirection = "下行";
     }
+
     // 更新显示
     updateFloorDisplay(m_currentFloor, m_currentDirection);
+
     ui->statusbar->showMessage(
         QString("前往%1楼").arg(floor),
         2000
@@ -352,35 +336,18 @@ void MainWindow::simulateElevatorMovement()
 {
     static bool goingUp = true;
 
-    if (m_targetFloor > 0) {
-        // 有目标楼层，向目标楼层移动
-        if (m_currentFloor < m_targetFloor) {
-            m_currentFloor++;
-            m_currentDirection = "上行";
-        } else if (m_currentFloor > m_targetFloor) {
-            m_currentFloor--;
-            m_currentDirection = "下行";
-        } else {
-            // 到达目标楼层
-            m_currentDirection = "停止";
-            m_targetFloor = 0;
-            ui->statusbar->showMessage("叮！已到达" + QString::number(m_currentFloor) + "楼", 3000);
-        }
-    } else {
-        // 没有目标楼层，模拟随机运行
-        if (m_currentFloor >= 8) {
-            goingUp = false;
-            m_currentDirection = "下行";
-        } else if (m_currentFloor <= 1) {
-            goingUp = true;
-            m_currentDirection = "上行";
-        }
+    if (m_currentFloor >= 8) {
+        goingUp = false;
+        m_currentDirection = "下行";
+    } else if (m_currentFloor <= 1) {
+        goingUp = true;
+        m_currentDirection = "上行";
+    }
 
-        if (goingUp) {
-            m_currentFloor++;
-        } else {
-            m_currentFloor--;
-        }
+    if (goingUp) {
+        m_currentFloor++;
+    } else {
+        m_currentFloor--;
     }
 
     updateFloorDisplay(m_currentFloor, m_currentDirection);
@@ -434,10 +401,7 @@ void MainWindow::updateAdDisplay(const QVariantMap &ad)
 
     if (type == "image") {
         if (localPath.isEmpty() || !QFile::exists(localPath)) {
-            // 如果没有图片，显示占位符
-            m_adDisplayLabel->setText(
-                QString("<h2>%1</h2><p>%2</p>").arg(title).arg(content)
-                );
+            m_adDisplayLabel->setText("<h3>暂无图片广告</h3>");
         } else {
             QPixmap pixmap(localPath);
             if (!pixmap.isNull()) {
@@ -451,7 +415,7 @@ void MainWindow::updateAdDisplay(const QVariantMap &ad)
         }
         m_adStackedWidget->setCurrentIndex(0);
     } else if (type == "text") {
-        m_textAdLabel->setText("<h2>" + title + "</h2><p>" + content + "</p>");
+        m_textAdLabel->setText("<h3>" + title + "</h3><p>" + content + "</p>");
         m_adStackedWidget->setCurrentIndex(1);
     }
 
@@ -462,7 +426,7 @@ void MainWindow::updateAdDisplay(const QVariantMap &ad)
             .arg(m_currentAdIndex + 1)
             .arg(m_adList.size()),
         3000
-    );
+        );
 }
 
 void MainWindow::playNextAd()
@@ -484,4 +448,27 @@ void MainWindow::switchToPreviousAd()
 void MainWindow::switchToNextAd()
 {
     playNextAd();
+}
+
+void MainWindow::onAdContentReady(const QString &adId, const QString &type,
+                                  const QString &content, const QString &localPath)
+{
+    QVariantMap adData;
+    adData["id"] = adId;
+    adData["type"] = type;
+    adData["content"] = content;
+    adData["local_path"] = localPath;
+    adData["last_update"] = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+    adData["title"] = adId;  // 使用adId作为标题
+
+    m_databaseHandler->updateAd(adData);
+
+    // 重新加载广告
+    loadCachedAds();
+}
+
+void MainWindow::onAdsUpdated()
+{
+    loadCachedAds();
+    ui->statusbar->showMessage("广告列表已更新", 3000);
 }
