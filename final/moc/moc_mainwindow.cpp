@@ -8,7 +8,6 @@
 
 #include "../mainwindow.h"
 #include <QtGui/qtextcursor.h>
-#include <QtNetwork/QSslError>
 #include <QtCore/qmetatype.h>
 
 #include <QtCore/qtmochelpers.h>
@@ -41,53 +40,44 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
     namespace QMC = QtMocConstants;
     QtMocHelpers::StringRefStorage qt_stringData {
         "MainWindow",
-        "updateFloorInfo",
+        "callElevatorToFloor",
         "",
         "floor",
+        "moveElevatorOneStep",
+        "updateFloorDisplay",
         "direction",
-        "onAdContentReady",
-        "adId",
-        "type",
-        "content",
-        "localPath",
-        "onAdsUpdated",
+        "updateAdDisplay",
+        "QVariantMap",
+        "ad",
         "playNextAd",
         "switchToPreviousAd",
         "switchToNextAd",
-        "onRefreshAdsClicked",
-        "onManualUpdateClicked",
-        "onAddAdClicked",
-        "onRemoveAdClicked",
         "simulateElevatorMovement"
     };
 
     QtMocHelpers::UintData qt_methods {
-        // Slot 'updateFloorInfo'
-        QtMocHelpers::SlotData<void(int, const QString &)>(1, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Int, 3 }, { QMetaType::QString, 4 },
+        // Slot 'callElevatorToFloor'
+        QtMocHelpers::SlotData<void(int)>(1, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 3 },
         }}),
-        // Slot 'onAdContentReady'
-        QtMocHelpers::SlotData<void(const QString &, const QString &, const QString &, const QString &)>(5, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::QString, 6 }, { QMetaType::QString, 7 }, { QMetaType::QString, 8 }, { QMetaType::QString, 9 },
+        // Slot 'moveElevatorOneStep'
+        QtMocHelpers::SlotData<void()>(4, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'updateFloorDisplay'
+        QtMocHelpers::SlotData<void(int, const QString &)>(5, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 3 }, { QMetaType::QString, 6 },
         }}),
-        // Slot 'onAdsUpdated'
-        QtMocHelpers::SlotData<void()>(10, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'updateAdDisplay'
+        QtMocHelpers::SlotData<void(const QVariantMap &)>(7, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { 0x80000000 | 8, 9 },
+        }}),
         // Slot 'playNextAd'
-        QtMocHelpers::SlotData<void()>(11, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(10, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'switchToPreviousAd'
-        QtMocHelpers::SlotData<void()>(12, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(11, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'switchToNextAd'
-        QtMocHelpers::SlotData<void()>(13, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onRefreshAdsClicked'
-        QtMocHelpers::SlotData<void()>(14, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onManualUpdateClicked'
-        QtMocHelpers::SlotData<void()>(15, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onAddAdClicked'
-        QtMocHelpers::SlotData<void()>(16, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onRemoveAdClicked'
-        QtMocHelpers::SlotData<void()>(17, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(12, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'simulateElevatorMovement'
-        QtMocHelpers::SlotData<void()>(18, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(13, 2, QMC::AccessPrivate, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -111,17 +101,14 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
     auto *_t = static_cast<MainWindow *>(_o);
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
-        case 0: _t->updateFloorInfo((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2]))); break;
-        case 1: _t->onAdContentReady((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[4]))); break;
-        case 2: _t->onAdsUpdated(); break;
-        case 3: _t->playNextAd(); break;
-        case 4: _t->switchToPreviousAd(); break;
-        case 5: _t->switchToNextAd(); break;
-        case 6: _t->onRefreshAdsClicked(); break;
-        case 7: _t->onManualUpdateClicked(); break;
-        case 8: _t->onAddAdClicked(); break;
-        case 9: _t->onRemoveAdClicked(); break;
-        case 10: _t->simulateElevatorMovement(); break;
+        case 0: _t->callElevatorToFloor((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
+        // case 1: _t->moveElevatorOneStep(); break;
+        case 2: _t->updateFloorDisplay((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2]))); break;
+        case 3: _t->updateAdDisplay((*reinterpret_cast< std::add_pointer_t<QVariantMap>>(_a[1]))); break;
+        case 4: _t->playNextAd(); break;
+        case 5: _t->switchToPreviousAd(); break;
+        case 6: _t->switchToNextAd(); break;
+        case 7: _t->simulateElevatorMovement(); break;
         default: ;
         }
     }
@@ -146,14 +133,14 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 11)
+        if (_id < 8)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 11;
+        _id -= 8;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 11)
+        if (_id < 8)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 11;
+        _id -= 8;
     }
     return _id;
 }

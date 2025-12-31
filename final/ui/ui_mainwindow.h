@@ -14,11 +14,16 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QStackedWidget>
+#include <QtWidgets/QStatusBar>
+#include <QtWidgets/QTableView>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
@@ -68,12 +73,28 @@ public:
     QPushButton *btn_ad_pause;
     QPushButton *btn_ad_resume;
     QSpacerItem *horizontalSpacer_ad_right;
+    QGroupBox *groupBox_manage;
+    QVBoxLayout *verticalLayout_manage;
+    QWidget *widget_manage_buttons;
+    QHBoxLayout *horizontalLayout_manage_buttons;
+    QSpacerItem *horizontalSpacer_manage_left;
+    QPushButton *btn_refresh;
+    QPushButton *btn_update;
+    QPushButton *btn_add;
+    QPushButton *btn_remove;
+    QSpacerItem *horizontalSpacer_manage_right;
+    QTableView *tableView_ads;
+    QStatusBar *statusbar;
+    QMenuBar *menubar;
+    QMenu *menu;
+    QMenu *menu_2;
+    QMenu *menu_3;
 
     void setupUi(QMainWindow *MainWindow)
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName("MainWindow");
-        MainWindow->resize(943, 832);
+        MainWindow->resize(1200, 1091);
         actionExit = new QAction(MainWindow);
         actionExit->setObjectName("actionExit");
         actionSettings = new QAction(MainWindow);
@@ -256,7 +277,80 @@ public:
 
         verticalLayout_3->addWidget(groupBox_ad);
 
+        groupBox_manage = new QGroupBox(centralwidget);
+        groupBox_manage->setObjectName("groupBox_manage");
+        groupBox_manage->setFont(font);
+        verticalLayout_manage = new QVBoxLayout(groupBox_manage);
+        verticalLayout_manage->setSpacing(10);
+        verticalLayout_manage->setObjectName("verticalLayout_manage");
+        widget_manage_buttons = new QWidget(groupBox_manage);
+        widget_manage_buttons->setObjectName("widget_manage_buttons");
+        horizontalLayout_manage_buttons = new QHBoxLayout(widget_manage_buttons);
+        horizontalLayout_manage_buttons->setObjectName("horizontalLayout_manage_buttons");
+        horizontalSpacer_manage_left = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+
+        horizontalLayout_manage_buttons->addItem(horizontalSpacer_manage_left);
+
+        btn_refresh = new QPushButton(widget_manage_buttons);
+        btn_refresh->setObjectName("btn_refresh");
+
+        horizontalLayout_manage_buttons->addWidget(btn_refresh);
+
+        btn_update = new QPushButton(widget_manage_buttons);
+        btn_update->setObjectName("btn_update");
+
+        horizontalLayout_manage_buttons->addWidget(btn_update);
+
+        btn_add = new QPushButton(widget_manage_buttons);
+        btn_add->setObjectName("btn_add");
+
+        horizontalLayout_manage_buttons->addWidget(btn_add);
+
+        btn_remove = new QPushButton(widget_manage_buttons);
+        btn_remove->setObjectName("btn_remove");
+
+        horizontalLayout_manage_buttons->addWidget(btn_remove);
+
+        horizontalSpacer_manage_right = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+
+        horizontalLayout_manage_buttons->addItem(horizontalSpacer_manage_right);
+
+
+        verticalLayout_manage->addWidget(widget_manage_buttons);
+
+        tableView_ads = new QTableView(groupBox_manage);
+        tableView_ads->setObjectName("tableView_ads");
+        tableView_ads->setAlternatingRowColors(true);
+        tableView_ads->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
+        tableView_ads->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
+        tableView_ads->horizontalHeader()->setStretchLastSection(true);
+
+        verticalLayout_manage->addWidget(tableView_ads);
+
+
+        verticalLayout_3->addWidget(groupBox_manage);
+
         MainWindow->setCentralWidget(centralwidget);
+        statusbar = new QStatusBar(MainWindow);
+        statusbar->setObjectName("statusbar");
+        MainWindow->setStatusBar(statusbar);
+        menubar = new QMenuBar(MainWindow);
+        menubar->setObjectName("menubar");
+        menubar->setGeometry(QRect(0, 0, 1200, 25));
+        menu = new QMenu(menubar);
+        menu->setObjectName("menu");
+        menu_2 = new QMenu(menubar);
+        menu_2->setObjectName("menu_2");
+        menu_3 = new QMenu(menubar);
+        menu_3->setObjectName("menu_3");
+        MainWindow->setMenuBar(menubar);
+
+        menubar->addAction(menu->menuAction());
+        menubar->addAction(menu_2->menuAction());
+        menubar->addAction(menu_3->menuAction());
+        menu->addAction(actionExit);
+        menu_2->addAction(actionSettings);
+        menu_3->addAction(actionAbout);
 
         retranslateUi(MainWindow);
 
@@ -291,6 +385,14 @@ public:
         btn_ad_next->setText(QCoreApplication::translate("MainWindow", "\344\270\213\344\270\200\344\270\252\345\271\277\345\221\212", nullptr));
         btn_ad_pause->setText(QCoreApplication::translate("MainWindow", "\346\232\202\345\201\234\350\275\256\346\222\255", nullptr));
         btn_ad_resume->setText(QCoreApplication::translate("MainWindow", "\347\273\247\347\273\255\350\275\256\346\222\255", nullptr));
+        groupBox_manage->setTitle(QCoreApplication::translate("MainWindow", "\345\271\277\345\221\212\350\256\241\345\210\222\347\256\241\347\220\206", nullptr));
+        btn_refresh->setText(QCoreApplication::translate("MainWindow", "\345\210\267\346\226\260\345\210\227\350\241\250", nullptr));
+        btn_update->setText(QCoreApplication::translate("MainWindow", "\346\211\213\345\212\250\346\233\264\346\226\260\345\271\277\345\221\212", nullptr));
+        btn_add->setText(QCoreApplication::translate("MainWindow", "\346\267\273\345\212\240\345\271\277\345\221\212", nullptr));
+        btn_remove->setText(QCoreApplication::translate("MainWindow", "\345\210\240\351\231\244\345\271\277\345\221\212", nullptr));
+        menu->setTitle(QCoreApplication::translate("MainWindow", "\346\226\207\344\273\266", nullptr));
+        menu_2->setTitle(QCoreApplication::translate("MainWindow", "\350\256\276\347\275\256", nullptr));
+        menu_3->setTitle(QCoreApplication::translate("MainWindow", "\345\270\256\345\212\251", nullptr));
     } // retranslateUi
 
 };
