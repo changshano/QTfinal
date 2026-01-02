@@ -12,22 +12,39 @@
 #include <QGroupBox>
 #include <QLabel>
 #include <QTimer>
-#include <QStatusBar>
 #include <QDateTime>
 #include <QPixmap>
 #include <QFile>
 #include <QDir>
 #include <QMessageBox>
+#include <QDebug>  // 添加调试输出
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , m_currentFloor(1)
+    , m_currentDirection("停止")
+    , m_currentAdIndex(0)
+    , m_floorNumberLabel(nullptr)
+    , m_directionLabel(nullptr)
+    , m_floorArrowLabel(nullptr)
+    , m_adDisplayLabel(nullptr)
+    , m_textAdLabel(nullptr)
+    , m_adStackedWidget(nullptr)
+    , m_elevatorSimTimer(nullptr)
+    , m_adCarouselTimer(nullptr)
+    , m_networkManager(nullptr)
+    , m_databaseHandler(nullptr)
+    , m_workerThread(nullptr)
 {
     ui->setupUi(this);
 
     // 设置窗口属性
     setWindowTitle("智能电梯广告系统");
     resize(1000, 700);
+
+    // 调试输出
+    qDebug() << "智能电梯广告系统启动...";
 
     setupUI();
     setupDatabase();
@@ -47,6 +64,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    qDebug() << "智能电梯广告系统关闭...";
+
     if (m_workerThread) {
         m_workerThread->quit();
         m_workerThread->wait();
@@ -211,13 +230,13 @@ void MainWindow::setupUI()
     connect(pauseBtn, &QPushButton::clicked, this, [this]() {
         if (m_adCarouselTimer) {
             m_adCarouselTimer->stop();
-            ui->statusbar->showMessage("广告轮播已暂停", 2000);
+            qDebug() << "广告轮播已暂停";
         }
     });
     connect(resumeBtn, &QPushButton::clicked, this, [this]() {
         if (m_adCarouselTimer) {
             m_adCarouselTimer->start();
-            ui->statusbar->showMessage("广告轮播已继续", 2000);
+            qDebug() << "广告轮播已继续";
         }
     });
 
@@ -241,7 +260,7 @@ void MainWindow::setupDatabase()
 {
     m_databaseHandler = new DatabaseHandler(this);
     if (m_databaseHandler->initDatabase()) {
-        ui->statusbar->showMessage("数据库初始化成功", 3000);
+        qDebug() << "数据库初始化成功";
     } else {
         QMessageBox::warning(this, "警告", "数据库初始化失败");
     }
@@ -257,7 +276,7 @@ void MainWindow::setupNetwork()
             this, &MainWindow::onAdsUpdated);
     connect(m_networkManager, &NetworkManager::errorOccurred,
             this, [this](const QString &error) {
-                ui->statusbar->showMessage("网络错误: " + error, 3000);
+                qWarning() << "网络错误:" << error;
             });
 }
 
@@ -271,8 +290,8 @@ void MainWindow::setupWorkerThread()
     connect(m_workerThread, &QThread::finished, worker, &QObject::deleteLater);
 
     connect(worker, &AdUpdateWorker::updateProgress,
-            this, [this](const QString &message) {
-                ui->statusbar->showMessage(message, 2000);
+            this, [](const QString &message) {
+                qDebug() << message;
             });
     connect(worker, &AdUpdateWorker::adsNeedUpdate,
             m_networkManager, &NetworkManager::fetchAds);
@@ -294,22 +313,22 @@ void MainWindow::loadCachedAds()
     if (!m_adList.isEmpty()) {
         m_currentAdIndex = 0;
         updateAdDisplay(m_adList.first());
-        ui->statusbar->showMessage(QString("加载了%1个广告").arg(m_adList.size()), 3000);
+        qDebug() << QString("加载了%1个广告").arg(m_adList.size()).toStdString().c_str();
     } else {
         m_adDisplayLabel->setText("<h2>暂无广告</h2><p>正在从服务器获取广告...</p>");
-        ui->statusbar->showMessage("从服务器获取广告中...", 3000);
+        qDebug() << "从服务器获取广告中...";
     }
 }
 
 void MainWindow::callElevatorToFloor(int floor)
 {
     if (floor < 1 || floor > 8) {
-        ui->statusbar->showMessage("无效楼层: " + QString::number(floor), 2000);
+        qDebug() << QString("无效楼层: %1").arg(floor).toStdString().c_str();
         return;
     }
 
     if (floor == m_currentFloor) {
-        ui->statusbar->showMessage("电梯已在" + QString::number(floor) + "楼", 2000);
+        qDebug() << QString("电梯已在%1楼").arg(floor).toStdString().c_str();
         return;
     }
 
@@ -326,10 +345,7 @@ void MainWindow::callElevatorToFloor(int floor)
     // 更新显示
     updateFloorDisplay(m_currentFloor, m_currentDirection);
 
-    ui->statusbar->showMessage(
-        QString("前往%1楼").arg(floor),
-        2000
-        );
+    qDebug() << QString("前往%1楼").arg(floor).toStdString().c_str();
 }
 
 void MainWindow::simulateElevatorMovement()
@@ -419,14 +435,12 @@ void MainWindow::updateAdDisplay(const QVariantMap &ad)
         m_adStackedWidget->setCurrentIndex(1);
     }
 
-    // 显示当前播放信息
-    ui->statusbar->showMessage(
-        QString("正在播放: %1 (%2/%3)")
-            .arg(title)
-            .arg(m_currentAdIndex + 1)
-            .arg(m_adList.size()),
-        3000
-        );
+    // 控制台输出当前播放信息
+    qDebug() << QString("正在播放: %1 (%2/%3)")
+                    .arg(title)
+                    .arg(m_currentAdIndex + 1)
+                    .arg(m_adList.size())
+                    .toStdString().c_str();
 }
 
 void MainWindow::playNextAd()
@@ -470,5 +484,5 @@ void MainWindow::onAdContentReady(const QString &adId, const QString &type,
 void MainWindow::onAdsUpdated()
 {
     loadCachedAds();
-    ui->statusbar->showMessage("广告列表已更新", 3000);
+    qDebug() << "广告列表已更新";
 }

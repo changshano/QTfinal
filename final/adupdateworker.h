@@ -12,6 +12,7 @@ public:
 
 public slots:
     void start();
+    void manualUpdate();  // 手动触发更新
 
 signals:
     void updateProgress(const QString &message);

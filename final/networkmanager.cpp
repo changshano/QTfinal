@@ -8,7 +8,6 @@ NetworkManager::NetworkManager(QObject *parent)
     : QObject(parent)
     , m_networkManager(new QNetworkAccessManager(this))
 {
-    // 创建缓存目录
     m_cacheDir = "cache";
     QDir dir(m_cacheDir);
     if (!dir.exists()) {
@@ -23,7 +22,6 @@ NetworkManager::~NetworkManager()
 
 void NetworkManager::fetchAds()
 {
-    // 真实的服务器URL
     QStringList adUrls = {
         "https://picsum.photos/400/300?random=1",
         "https://picsum.photos/400/300?random=2",
@@ -47,7 +45,6 @@ void NetworkManager::fetchAds()
         });
     }
 
-    // 添加一个文字广告
     QString adId = "ad_text_1";
     emit adContentReady(adId, "text", "欢迎使用电梯广告系统！", "");
 

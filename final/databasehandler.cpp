@@ -45,8 +45,8 @@ bool DatabaseHandler::createTables()
         "CREATE TABLE IF NOT EXISTS ads ("
         "    id TEXT PRIMARY KEY,"
         "    title TEXT NOT NULL,"
-        "    type TEXT NOT NULL,"  // 'image' 或 'text'
-        "    content TEXT,"        // 对于文字广告，存储文字内容
+        "    type TEXT NOT NULL,"
+        "    content TEXT,"
         "    remote_url TEXT,"
         "    local_path TEXT,"
         "    last_update DATETIME"

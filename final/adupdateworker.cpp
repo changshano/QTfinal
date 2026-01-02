@@ -22,6 +22,11 @@ void AdUpdateWorker::start()
     QTimer::singleShot(1000, this, &AdUpdateWorker::checkForUpdates);
 }
 
+void AdUpdateWorker::manualUpdate()
+{
+
+}
+
 void AdUpdateWorker::checkForUpdates()
 {
     QString currentTime = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
