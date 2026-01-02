@@ -17,7 +17,7 @@
 #include <QFile>
 #include <QDir>
 #include <QMessageBox>
-#include <QDebug>  // 添加调试输出
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -477,7 +477,6 @@ void MainWindow::onAdContentReady(const QString &adId, const QString &type,
 
     m_databaseHandler->updateAd(adData);
 
-    // 重新加载广告
     loadCachedAds();
 }
 

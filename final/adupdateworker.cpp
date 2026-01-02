@@ -6,7 +6,7 @@ AdUpdateWorker::AdUpdateWorker(QObject *parent)
     : QObject(parent)
     , m_updateTimer(new QTimer(this))
 {
-    m_updateTimer->setInterval(30000); // 30秒检查一次更新
+    m_updateTimer->setInterval(30000); // 检查更新
 
     connect(m_updateTimer, &QTimer::timeout,
             this, &AdUpdateWorker::checkForUpdates);

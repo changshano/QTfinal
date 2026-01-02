@@ -101,7 +101,6 @@ Qt::ItemFlags AdPlanModel::flags(const QModelIndex &index) const
 
     Qt::ItemFlags flags = QAbstractTableModel::flags(index);
 
-    // 前两列只读，其他列可编辑
     if (index.column() >= 1) {
         flags |= Qt::ItemIsEditable;
     }
@@ -120,7 +119,7 @@ void AdPlanModel::addAd(const QVariantMap &adData)
 {
     beginInsertRows(QModelIndex(), m_ads.size(), m_ads.size());
     m_ads.append(adData);
-    m_dbHandler->updateAd(adData);  // 改为使用 updateAd
+    m_dbHandler->updateAd(adData);
     endInsertRows();
 }
 

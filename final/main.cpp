@@ -12,14 +12,12 @@ int main(int argc, char *argv[])
     QApplication::setApplicationVersion("1.0.0");
     QApplication::setOrganizationName("QtCompany");
 
-    // 设置样式
     QFile styleFile(":/resources/styles.qss");
     if (styleFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QString styleSheet = QLatin1String(styleFile.readAll());
         a.setStyleSheet(styleSheet);
         styleFile.close();
     } else {
-        // 默认样式
         a.setStyleSheet(R"(
             QMainWindow {
                 background-color: #f0f0f0;
