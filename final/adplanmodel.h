@@ -23,7 +23,6 @@ public:
                  int role = Qt::EditRole) override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-    // 自定义方法
     void refresh();
 
     QVariantMap getAd(int row) const;
